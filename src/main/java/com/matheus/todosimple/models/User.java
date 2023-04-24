@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -21,8 +22,8 @@ public class User {
     public static final String TABLE_NAME = "user";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)//Definir o número de ID das entidades (user1, user2, etc..)
-    @Column(name = "id", unique = true)//Não tinha tana necessidade de colocar unique por conta do GenerationType, foi colocado mais por garantia.
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//Definir o número de ID das entidades de forma seguencial (user1, user2, etc..)
+    @Column(name = "id", unique = true)//Não tinha tanta necessidade de colocar unique por conta do GenerationType, foi colocado mais por garantia.
     private Long id; //Recomendável utilizar os tipos "Wrapper" para evitar o temido "NullPointException"
 
     @Column(name = "username", length = 100, nullable = false, unique = true)
@@ -38,8 +39,8 @@ public class User {
     @Size(groups = {CreateUser.class, UpdateUser.class}, min = 8, max = 60)
     private String password;
 
-    //private List<Task> tasks = new ArrayList<Task>();
-
+    @OneToMany(mappedBy = "user") //1 "user" pode ter várias Task (colocar o nome da variável de referência da classe)
+    private List<Task> tasks = new ArrayList<Task>();
 
     public User() {
     }
@@ -72,6 +73,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
     }
 
     @Override
