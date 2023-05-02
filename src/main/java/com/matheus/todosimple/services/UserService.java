@@ -12,7 +12,7 @@ import java.util.Optional;
 public class UserService {
 
     //Basicamente, o @AutoWired está substituindo o papel do construtor nesse caso.
-    @Autowired//Não é possível instânciar uma interface, logo, utilizamos a AutoWired para trazer as notações do Spring dela para esta classe.
+    @Autowired//Não é possível instânciar uma interface, logo, utilizamos a Autowired para trazer as notações do Spring dela para esta classe.
     private UserRepository userRepository;
 
 

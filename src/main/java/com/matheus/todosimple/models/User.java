@@ -1,5 +1,6 @@
 package com.matheus.todosimple.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
@@ -75,6 +76,7 @@ public class User {
         this.password = password;
     }
 
+    @JsonIgnore //Deve ser ignorado durante a serialização JSON para não retornar todas as tasks do usuário para o front.
     public List<Task> getTasks() {
         return tasks;
     }
