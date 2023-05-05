@@ -4,3 +4,6 @@
 - Esse projeto tem como intuito consumir API Restful utilizando Spring boot da linguagem Java.
 
 - Tecnologias utilizadas: Java, Spring Boot, HTML/CSS, JavaScript, Bootstrap e MySQL.
+
+### Curso de monitoria API Java - ICEI PUC Minas
+#### - Monitoria: Lucas Ângelo
