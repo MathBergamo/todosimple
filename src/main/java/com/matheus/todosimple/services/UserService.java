@@ -2,6 +2,8 @@ package com.matheus.todosimple.services;
 
 import com.matheus.todosimple.models.User;
 import com.matheus.todosimple.repositories.UserRepository;
+import com.matheus.todosimple.services.exceptions.DataBindingViolationException;
+import com.matheus.todosimple.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,7 @@ public class UserService {
 
     public User findById(Long id){ //findById é o mais simples dos Reads do CRUD
         Optional<User> user = this.userRepository.findById(id);//findById está sendo pego do JpaRepository
-        return user.orElseThrow(() -> new RuntimeException(//orElseThrow permite que caso o valor retorne "nada", ele realize uma exceção.
+        return user.orElseThrow(() -> new ObjectNotFoundException(//orElseThrow permite que caso o valor retorne "nada", ele realize uma exceção.
                 "Usuário não encontrado! Id:" + id + ", Tipo: " + User.class.getName()));
     }
 
@@ -41,7 +43,7 @@ public class UserService {
         try {
             this.userRepository.deleteById(id);
         }catch (Exception e){
-            throw new RuntimeException("Não é possível excluir pois há entidades relacioandas!");
+            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacioandas!");
         }
     }
 }

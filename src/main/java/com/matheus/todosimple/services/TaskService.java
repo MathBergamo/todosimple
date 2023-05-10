@@ -3,10 +3,13 @@ package com.matheus.todosimple.services;
 import com.matheus.todosimple.models.Task;
 import com.matheus.todosimple.models.User;
 import com.matheus.todosimple.repositories.TaskRepository;
+import com.matheus.todosimple.services.exceptions.DataBindingViolationException;
+import com.matheus.todosimple.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.bind.DataBindingException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +23,7 @@ public class TaskService {
 
     public Task findById (Long id) {
         Optional<Task> task = this.taskRepository.findById(id);
-        return task.orElseThrow(() -> new RuntimeException(
+        return task.orElseThrow(() -> new ObjectNotFoundException(
                 "Tarefa não encontrada! Id:" + id + ", Tipo: " + Task.class.getName()));
     }
 
@@ -50,7 +53,7 @@ public class TaskService {
         try {
             this.taskRepository.deleteById(id);
         }catch (Exception e){
-            throw new RuntimeException("Não é possível excluir pois há entidades relacionadas!");
+            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
         }
     }
 }
