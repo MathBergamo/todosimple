@@ -1,4 +1,4 @@
-package com.matheus.todosimple.enums;
+package com.matheus.todosimple.models.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,16 +15,15 @@ public enum ProfileEnum {
     private String description;
 
     public static ProfileEnum toEnum(Integer code) {
-        if (Objects.isNull(code)){
+        if (Objects.isNull(code)) {
             return null;
         }
 
-        for (ProfileEnum profile: ProfileEnum.values()) {
-            if (code.equals(profile.getCode())){
-                return profile;
+        for (ProfileEnum x : ProfileEnum.values()) {
+            if (code.equals(x.getCode())) {
+                return x;
             }
-
-            throw new IllegalArgumentException("Invalid code" + code);
         }
+        throw new IllegalArgumentException("Invalid code" + code);
     }
 }
