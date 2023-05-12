@@ -1,17 +1,25 @@
 package com.matheus.todosimple.services;
 
 import com.matheus.todosimple.models.User;
+import com.matheus.todosimple.models.enums.ProfileEnum;
 import com.matheus.todosimple.repositories.UserRepository;
 import com.matheus.todosimple.services.exceptions.DataBindingViolationException;
 import com.matheus.todosimple.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserService {
+
+    @Autowired //dependência injetada
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
 
     //Basicamente, o @AutoWired está substituindo o papel do construtor nesse caso.
     @Autowired//Não é possível instânciar uma interface, logo, utilizamos a Autowired para trazer as notações do Spring dela para esta classe.
@@ -27,6 +35,8 @@ public class UserService {
     @Transactional//Garante a operação atômica. Exemplo: Ou você salva todos os dados do usuário, ou não salva nenhum.
     public User create(User obj) {
         obj.setId(null);//Garantir que o Id é resetado para não utilizar um Id que já exista.
+        obj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));//Objeto sendo salvo com criptografia
+        obj.setProfiles(Stream.of(ProfileEnum.USER.getCode()).collect(Collectors.toSet()));//Garantir que o usuário seja criado com o código de número 2 (USER)
         obj = this.userRepository.save(obj);
         return obj;
     }
@@ -34,7 +44,7 @@ public class UserService {
     @Transactional
     public User update(User obj){//Só será necessário atualizar a senha.
         User newObj = findById(obj.getId());
-        newObj.setPassword(obj.getPassword());
+        newObj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));//Objeto sendo salvo com criptografia
         return this.userRepository.save(newObj);
     }
 
