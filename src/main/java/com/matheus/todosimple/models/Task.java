@@ -4,8 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -27,7 +25,7 @@ public class Task {
 
     @Column(name = "description", length = 255, nullable = false)
     @Size(min = 1, max = 255)
-    @NotBlank
+    @NotBlank //Funciona apenas com String, ( not empty junto com o not null )
     private String description;
 
 }

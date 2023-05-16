@@ -4,7 +4,6 @@ package com.matheus.todosimple.controllers;
 import com.matheus.todosimple.models.Task;
 import com.matheus.todosimple.models.projection.TaskProjection;
 import com.matheus.todosimple.services.TaskService;
-import com.matheus.todosimple.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

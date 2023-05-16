@@ -32,8 +32,8 @@ public class UserService {
 
     public User findById(Long id) {
         UserSpringSecurity userSpringSecurity = authenticated();
-        if (!Objects.nonNull(userSpringSecurity)
-                || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId()))
+        if (!Objects.nonNull(userSpringSecurity)//se não estiver nulo é identificado que há um usuário logado
+                || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId()))//Terá acesso negado se não for admin e se buscar um ID q não for ele.
             throw new AuthorizationException("Acesso negado!");
 
         Optional<User> user = this.userRepository.findById(id);
@@ -52,7 +52,7 @@ public class UserService {
 
     @Transactional
     public User update(User obj) {
-        User newObj = findById(obj.getId());
+        User newObj = findById(obj.getId());//O findById na CRUD está sendo utilizado para que o usuário só possa fazer alterações em seu próprio usuário.
         newObj.setPassword(obj.getPassword());
         newObj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));
         return this.userRepository.save(newObj);
@@ -67,7 +67,7 @@ public class UserService {
         }
     }
 
-    public static UserSpringSecurity authenticated() {
+    public static UserSpringSecurity authenticated() { //Identificar quem está logado e antenticado
         try {
             return (UserSpringSecurity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         } catch (Exception e) {

@@ -77,7 +77,7 @@ public class TaskService {
     }
 
     private Boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task) {
-        return task.getUser().getId().equals(userSpringSecurity.getId());
+        return task.getUser().getId().equals(userSpringSecurity.getId());//Verificar se o id atrelado a task é o mesmo que está logado.
     }
 
 }
