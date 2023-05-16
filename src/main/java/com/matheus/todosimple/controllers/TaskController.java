@@ -2,6 +2,7 @@ package com.matheus.todosimple.controllers;
 
 
 import com.matheus.todosimple.models.Task;
+import com.matheus.todosimple.models.projection.TaskProjection;
 import com.matheus.todosimple.services.TaskService;
 import com.matheus.todosimple.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +23,15 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    @Autowired
-    private UserService userService;
-
     @GetMapping("/{id}")
     public ResponseEntity<Task> findById(@PathVariable Long id) {
         Task obj = this.taskService.findById(id);
         return ResponseEntity.ok(obj);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Task>> findAllByUserId(@PathVariable Long userId) {
-        userService.findById(userId);
-        List<Task> objs = this.taskService.findAllByUserId(userId);
+    @GetMapping("/user")
+    public ResponseEntity<List<TaskProjection>> findAllByUser() {
+        List<TaskProjection> objs = this.taskService.findAllByUser();
         return ResponseEntity.ok().body(objs);
     }
 
@@ -42,7 +39,8 @@ public class TaskController {
     @Validated
     public ResponseEntity<Void> create(@Valid @RequestBody Task obj) {
         this.taskService.create(obj);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(obj.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
@@ -59,4 +57,6 @@ public class TaskController {
         this.taskService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }
+

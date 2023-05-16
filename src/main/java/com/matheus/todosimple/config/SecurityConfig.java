@@ -1,5 +1,7 @@
 package com.matheus.todosimple.config; //Aqui é a pasta que irá criptografar dados, autenticação e será responsável pela segurança em geral.
 
+import com.matheus.todosimple.security.JWTAuthenticationFilter;
+import com.matheus.todosimple.security.JWTAuthorizationFilter;
 import com.matheus.todosimple.security.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,29 +25,28 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-//Isso garante que todos os métodos tenham uma segurança global no prepost
 public class SecurityConfig {
-    //PUBLIC_MATCHERS define a rota pública que não precisará de autenticação
 
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserDetailsService getUserDetailsService;
+    private UserDetailsService userDetailsService;
 
     @Autowired
     private JWTUtil jwtUtil;
 
-    private UserDetailsService userDetailsService;
-
-    private static final String[] PUBLIC_MATCHERS = {"/"};
-    //Rotas publicas para o post, precisa estar público para o usuário poder se criar.
-    //O /login não é implementado, o próprio Spring security já fica responsável por cria-lo
-    private static final String[] PUBLIC_MATCHERS_POST = {"/user", "/login"};
+    private static final String[] PUBLIC_MATCHERS = {
+            "/"
+    };
+    private static final String[] PUBLIC_MATCHERS_POST = {
+            "/user",
+            "/login"
+    };
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { //Uma das partes da autenticação (Desenho do diagrama)
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.cors().and().csrf().disable();//Desabilitar o crsf do cors
+        http.cors().and().csrf().disable();
 
         AuthenticationManagerBuilder authenticationManagerBuilder = http
                 .getSharedObject(AuthenticationManagerBuilder.class);
@@ -53,13 +54,19 @@ public class SecurityConfig {
                 .passwordEncoder(bCryptPasswordEncoder());
         this.authenticationManager = authenticationManagerBuilder.build();
 
-        http.authorizeRequests().antMatchers(HttpMethod.POST, PUBLIC_MATCHERS_POST).permitAll()//Qualquer requisição post q faça match com PUBLIC_MATCHERS será permitido
-                .antMatchers(PUBLIC_MATCHERS).permitAll()//tudo que está no PUBLIC_MATCHERS poderá ser acessado com qualquer tipo de requisição (não há nada em "/")
-                .anyRequest().authenticated();//Qualquer outro tipo de acesso para qualquer outra rota, precisa de autenticação
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.POST, PUBLIC_MATCHERS_POST).permitAll()
+                .antMatchers(PUBLIC_MATCHERS).permitAll()
+                .anyRequest().authenticated().and()
+                .authenticationManager(authenticationManager);
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);//Definir a politica de sessão como STATELESS
+        http.addFilter(new JWTAuthenticationFilter(this.authenticationManager, this.jwtUtil));
+        http.addFilter(new JWTAuthorizationFilter(this.authenticationManager, this.jwtUtil,
+                this.userDetailsService));
 
-        return http.build();//Build é juntar todos os dados e criar o objeto com a instância já pronta.
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        return http.build();
     }
 
     @Bean
@@ -72,7 +79,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {//Serve para criptografar.
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

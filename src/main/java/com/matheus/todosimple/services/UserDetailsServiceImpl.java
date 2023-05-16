@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 @Service
-public class UserDetailsServiceImp implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
@@ -24,4 +24,5 @@ public class UserDetailsServiceImp implements UserDetailsService {
             throw new UsernameNotFoundException("Usuário não encontrado: " + username);
         return new UserSpringSecurity(user.getId(), user.getUsername(), user.getPassword(), user.getProfiles());
     }
+
 }

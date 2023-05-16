@@ -1,15 +1,22 @@
 package com.matheus.todosimple.services;
 
 import com.matheus.todosimple.models.User;
+import com.matheus.todosimple.models.dto.UserCreateDTO;
+import com.matheus.todosimple.models.dto.UserUpdateDTO;
 import com.matheus.todosimple.models.enums.ProfileEnum;
 import com.matheus.todosimple.repositories.UserRepository;
+import com.matheus.todosimple.security.UserSpringSecurity;
+import com.matheus.todosimple.services.exceptions.AuthorizationException;
 import com.matheus.todosimple.services.exceptions.DataBindingViolationException;
 import com.matheus.todosimple.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,43 +24,69 @@ import java.util.stream.Stream;
 @Service
 public class UserService {
 
-    @Autowired //dependência injetada
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-
-    //Basicamente, o @AutoWired está substituindo o papel do construtor nesse caso.
-    @Autowired//Não é possível instânciar uma interface, logo, utilizamos a Autowired para trazer as notações do Spring dela para esta classe.
+    @Autowired
     private UserRepository userRepository;
 
+    public User findById(Long id) {
+        UserSpringSecurity userSpringSecurity = authenticated();
+        if (!Objects.nonNull(userSpringSecurity)
+                || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId()))
+            throw new AuthorizationException("Acesso negado!");
 
-    public User findById(Long id){ //findById é o mais simples dos Reads do CRUD
-        Optional<User> user = this.userRepository.findById(id);//findById está sendo pego do JpaRepository
-        return user.orElseThrow(() -> new ObjectNotFoundException(//orElseThrow permite que caso o valor retorne "nada", ele realize uma exceção.
-                "Usuário não encontrado! Id:" + id + ", Tipo: " + User.class.getName()));
+        Optional<User> user = this.userRepository.findById(id);
+        return user.orElseThrow(() -> new ObjectNotFoundException(
+                "Usuário não encontrado! Id: " + id + ", Tipo: " + User.class.getName()));
     }
 
-    @Transactional//Garante a operação atômica. Exemplo: Ou você salva todos os dados do usuário, ou não salva nenhum.
+    @Transactional
     public User create(User obj) {
-        obj.setId(null);//Garantir que o Id é resetado para não utilizar um Id que já exista.
-        obj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));//Objeto sendo salvo com criptografia
-        obj.setProfiles(Stream.of(ProfileEnum.USER.getCode()).collect(Collectors.toSet()));//Garantir que o usuário seja criado com o código de número 2 (USER)
+        obj.setId(null);
+        obj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));
+        obj.setProfiles(Stream.of(ProfileEnum.USER.getCode()).collect(Collectors.toSet()));
         obj = this.userRepository.save(obj);
         return obj;
     }
 
     @Transactional
-    public User update(User obj){//Só será necessário atualizar a senha.
+    public User update(User obj) {
         User newObj = findById(obj.getId());
-        newObj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));//Objeto sendo salvo com criptografia
+        newObj.setPassword(obj.getPassword());
+        newObj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));
         return this.userRepository.save(newObj);
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         findById(id);
         try {
             this.userRepository.deleteById(id);
-        }catch (Exception e){
-            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacioandas!");
+        } catch (Exception e) {
+            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
         }
     }
+
+    public static UserSpringSecurity authenticated() {
+        try {
+            return (UserSpringSecurity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public User fromDTO(@Valid UserCreateDTO obj) {
+        User user = new User();
+        user.setUsername(obj.getUsername());
+        user.setPassword(obj.getPassword());
+        return user;
+    }
+
+    public User fromDTO(@Valid UserUpdateDTO obj) {
+        User user = new User();
+        user.setId(obj.getId());
+        user.setPassword(obj.getPassword());
+        return user;
+    }
+
 }

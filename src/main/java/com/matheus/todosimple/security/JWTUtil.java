@@ -10,13 +10,13 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Objects;
 
-@Component //componente do Spring
+@Component
 public class JWTUtil {
 
-    @Value("$(jwt.secret)") //Pegar o valor dentro do application properties
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("$(jwt.experation)") //Pegar o valor dentro do application properties
+    @Value("${jwt.expiration}")
     private Long expiration;
 
     public String generateToken(String username) {
@@ -60,4 +60,6 @@ public class JWTUtil {
             return null;
         }
     }
+
 }
+

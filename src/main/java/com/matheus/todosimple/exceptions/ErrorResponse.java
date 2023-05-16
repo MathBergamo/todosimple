@@ -38,4 +38,5 @@ public class ErrorResponse {
         return "{\"status\": " + getStatus() + ", " +
                 "\"message\": \"" + getMessage() + "\"}";
     }
+
 }
